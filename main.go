@@ -11,6 +11,7 @@ type HealthResponse struct {
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Health check request received")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
