@@ -5,7 +5,7 @@ replicaCount: 1
 image:
   repository: health-service  # Docker image name
   pullPolicy: IfNotPresent   # When to pull image (Always/Never/IfNotPresent)
-  tag: "v1.2"              # Image tag
+  tag: "v1.4"              # Image tag
 
 # Docker registry secrets (if using private registry)
 imagePullSecrets: []
@@ -23,18 +23,11 @@ serviceAccount:
 # Additional pod metadata
 podAnnotations: {}
 
-# Pod-level security settings
-podSecurityContext:
-  fsGroup: 1000      # File system group ID
+# Pod-level security settings (disabled for easier debugging this should be in other layer security)
+podSecurityContext: {}
 
-# Container-level security settings
-securityContext:
-  capabilities:
-    drop:
-    - ALL                        # Remove all Linux capabilities
-  readOnlyRootFilesystem: true   # Prevent writing to container filesystem
-  runAsNonRoot: true             # Prevent running as root user
-  runAsUser: 1000                # Run as specific user ID
+# Container-level security settings (disabled for easier debugging this should be in other layer security)
+securityContext: {}
 
 # Kubernetes service configuration
 service:

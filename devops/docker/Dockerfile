@@ -12,13 +12,11 @@ RUN chmod +x main
 FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
-WORKDIR /root/
+WORKDIR /app
 
 COPY --from=builder /app/main .
 RUN chmod +x ./main
 
 EXPOSE 8080
-
-USER 1000:1000
 
 CMD ["./main"]
