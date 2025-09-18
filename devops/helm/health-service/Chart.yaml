@@ -1,0 +1,14 @@
+apiVersion: v2
+name: health-service
+description: A simple Go health service for Kubernetes PoC
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - golang
+  - health
+  - microservice
+home: https://github.com/example/health-service
+maintainers:
+  - name: DevOps Team
+    email: devops@example.com

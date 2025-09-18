@@ -1,0 +1,11 @@
+.git
+.gitignore
+README.md
+poc_summary.md
+devops/helm
+devops/k8s
+.DS_Store
+*.md
+.env*
+.vscode
+.idea
