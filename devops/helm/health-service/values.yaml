@@ -1,79 +1,96 @@
+# Number of pod replicas
 replicaCount: 1
 
+# Container image configuration
 image:
-  repository: health-service
-  pullPolicy: IfNotPresent
-  tag: "latest"
+  repository: health-service  # Docker image name
+  pullPolicy: IfNotPresent   # When to pull image (Always/Never/IfNotPresent)
+  tag: "v1.2"              # Image tag
 
+# Docker registry secrets (if using private registry)
 imagePullSecrets: []
+
+# Override chart/release names
 nameOverride: ""
 fullnameOverride: ""
 
+# Service account for pod identity
 serviceAccount:
-  create: true
-  annotations: {}
-  name: ""
+  create: true        # Create new service account
+  annotations: {}     # Additional annotations
+  name: ""           # Custom name (auto-generated if empty)
 
+# Additional pod metadata
 podAnnotations: {}
 
+# Pod-level security settings
 podSecurityContext:
-  fsGroup: 1000
+  fsGroup: 1000      # File system group ID
 
+# Container-level security settings
 securityContext:
   capabilities:
     drop:
-    - ALL
-  readOnlyRootFilesystem: true
-  runAsNonRoot: true
-  runAsUser: 1000
+    - ALL                        # Remove all Linux capabilities
+  readOnlyRootFilesystem: true   # Prevent writing to container filesystem
+  runAsNonRoot: true             # Prevent running as root user
+  runAsUser: 1000                # Run as specific user ID
 
+# Kubernetes service configuration
 service:
-  type: ClusterIP
-  port: 80
-  targetPort: 8080
+  type: ClusterIP    # Service type (ClusterIP/NodePort/LoadBalancer)
+  port: 80          # External port
+  targetPort: 8080  # Container port
 
+# External access configuration
 ingress:
-  enabled: false
-  className: ""
-  annotations: {}
+  enabled: false               # Enable/disable ingress
+  className: ""               # Ingress class (nginx/traefik/etc)
+  annotations: {}             # Ingress annotations
   hosts:
     - host: health-service.local
       paths:
         - path: /
           pathType: Prefix
-  tls: []
+  tls: []                     # TLS/SSL configuration
 
+# Resource limits and requests
 resources:
   limits:
-    cpu: 500m
-    memory: 128Mi
+    cpu: 500m      # Maximum CPU (500 millicores)
+    memory: 128Mi  # Maximum memory
   requests:
-    cpu: 100m
-    memory: 64Mi
+    cpu: 100m      # Guaranteed CPU
+    memory: 64Mi   # Guaranteed memory
 
+# Horizontal Pod Autoscaler
 autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 80
+  enabled: false                        # Enable/disable auto-scaling
+  minReplicas: 1                        # Minimum pod count
+  maxReplicas: 10                       # Maximum pod count
+  targetCPUUtilizationPercentage: 80    # Scale when CPU > 80%
 
-nodeSelector: {}
+# Node selection constraints
+nodeSelector: {}   # Select specific nodes
 
-tolerations: []
+# Pod scheduling tolerations
+tolerations: []    # Allow scheduling on tainted nodes
 
-affinity: {}
+# Pod affinity/anti-affinity rules
+affinity: {}       # Advanced scheduling rules
 
+# Application health monitoring
 healthCheck:
   enabled: true
-  livenessProbe:
+  livenessProbe:              # Restart pod if failing
     httpGet:
       path: /health
       port: http
-    initialDelaySeconds: 30
-    periodSeconds: 10
-  readinessProbe:
+    initialDelaySeconds: 30   # Wait before first check
+    periodSeconds: 10         # Check interval
+  readinessProbe:             # Remove from service if failing
     httpGet:
       path: /health
       port: http
-    initialDelaySeconds: 5
-    periodSeconds: 5
+    initialDelaySeconds: 5    # Wait before first check
+    periodSeconds: 5          # Check interval
