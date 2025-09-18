@@ -1,6 +1,13 @@
 # Number of pod replicas
 replicaCount: 1
 
+# Namespace configuration
+namespace:
+  name: "health-service"     # Target namespace name
+  create: true               # Create namespace if it doesn't exist
+  labels: {}                 # Additional namespace labels
+  annotations: {}            # Additional namespace annotations
+
 # Container image configuration
 image:
   repository: health-service  # Docker image name

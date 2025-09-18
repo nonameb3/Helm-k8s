@@ -2,7 +2,7 @@ apiVersion: v2
 name: health-service
 description: A simple Go health service for Kubernetes PoC
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "1.0.5"
 keywords:
   - golang

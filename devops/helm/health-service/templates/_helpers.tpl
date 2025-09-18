@@ -60,3 +60,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Get the namespace name
+*/}}
+{{- define "health-service.namespace" -}}
+{{- .Values.namespace.name | default .Release.Namespace }}
+{{- end }}
