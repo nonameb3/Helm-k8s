@@ -17,6 +17,7 @@ spec:
       containers:
       - name: {{ .Values.service_name }}-container
         image: {{ .Values.image_name }}:{{ .Values.image_tag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         ports:
           - containerPort: {{ .Values.port }}
         livenessProbe:

@@ -1,0 +1,24 @@
+  # Development Environment Configuration
+  service_name: health-service-dev
+  image_name: health-service
+  image_tag: v1.5
+  imagePullPolicy: Never
+  namespace: health-service-dev
+  replicas: 1
+
+  # Network configuration
+  port: 8080
+  ingress_path: /health
+  ingress_host: health-service-dev.local
+
+  # Environment settings
+  environment: development
+
+  # Relaxed resources for development
+  resources:
+    requests:
+      memory: 32Mi
+      cpu: 50m
+    limits:
+      memory: 64Mi
+      cpu: 200m

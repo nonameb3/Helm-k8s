@@ -2,6 +2,7 @@
 service_name: health-service
 image_name: health-service
 image_tag: v1.5
+imagePullPolicy: IfNotPresent
 namespace: health-service
 replicas: 1
 
