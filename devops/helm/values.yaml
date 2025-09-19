@@ -44,15 +44,15 @@ service:
 
 # External access configuration
 ingress:
-  enabled: false               # Enable/disable ingress
-  className: ""               # Ingress class (nginx/traefik/etc)
-  annotations: {}             # Ingress annotations
+  enabled: true                # Enable/disable ingress
+  className: "nginx"          # Ingress class (nginx for local development)
+  annotations: {}              # No rewrite - keep original paths
   hosts:
     - host: health-service.local
       paths:
-        - path: /
+        - path: /health         # Direct health check path (matches Go app)
           pathType: Prefix
-  tls: []                     # TLS/SSL configuration
+  tls: []                     # TLS/SSL configuration (empty for local)
 
 # Resource limits and requests
 resources:
