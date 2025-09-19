@@ -1,60 +1,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "health-service.fullname" . }}
-  namespace: {{ include "health-service.namespace" . }}
-  labels:
-    {{- include "health-service.labels" . | nindent 4 }}
+  name: {{ .Values.service_name }}
+  namespace: {{ .Values.namespace }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
+  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      {{- include "health-service.selectorLabels" . | nindent 6 }}
+      service: {{ .Values.service_name }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       labels:
-        {{- include "health-service.selectorLabels" . | nindent 8 }}
+        service: {{ .Values.service_name }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "health-service.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      serviceAccountName: {{ .Values.service_name }}
       containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.targetPort }}
-              protocol: TCP
-          {{- if .Values.healthCheck.enabled }}
-          livenessProbe:
-            {{- toYaml .Values.healthCheck.livenessProbe | nindent 12 }}
-          readinessProbe:
-            {{- toYaml .Values.healthCheck.readinessProbe | nindent 12 }}
-          {{- end }}
-          resources:
+      - name: {{ .Values.service_name }}-container
+        image: {{ .Values.image_name }}:{{ .Values.image_tag }}
+        ports:
+          - containerPort: {{ .Values.port }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.port }}
+          initialDelaySeconds: 15
+          failureThreshold: 2
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.port }}
+          initialDelaySeconds: 5
+          failureThreshold: 2
+          periodSeconds: 10
+        env:
+          - name: PORT
+            value: {{ .Values.port | quote }}
+          - name: ENVIRONMENT
+            value: {{ .Values.environment | quote }}
+        resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}

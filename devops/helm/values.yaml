@@ -1,96 +1,23 @@
-# Number of pod replicas
-replicaCount: 1
+# Service configuration (company style - flat structure)
+service_name: health-service
+image_name: health-service
+image_tag: v1.5
+namespace: health-service
+replicas: 1
 
-# Namespace configuration
-namespace:
-  name: "health-service"     # Target namespace name
-  create: true               # Create namespace if it doesn't exist
-  labels: {}                 # Additional namespace labels
-  annotations: {}            # Additional namespace annotations
+# Network configuration
+port: 8080
+ingress_path: /health
+ingress_host: health-service.local
 
-# Container image configuration
-image:
-  repository: health-service  # Docker image name
-  pullPolicy: IfNotPresent   # When to pull image (Always/Never/IfNotPresent)
-  tag: "v1.5"              # Image tag
-
-# Docker registry secrets (if using private registry)
-imagePullSecrets: []
-
-# Override chart/release names
-nameOverride: ""
-fullnameOverride: ""
-
-# Service account for pod identity
-serviceAccount:
-  create: true        # Create new service account
-  annotations: {}     # Additional annotations
-  name: ""           # Custom name (auto-generated if empty)
-
-# Additional pod metadata
-podAnnotations: {}
-
-# Pod-level security settings (disabled for easier debugging this should be in other layer security)
-podSecurityContext: {}
-
-# Container-level security settings (disabled for easier debugging this should be in other layer security)
-securityContext: {}
-
-# Kubernetes service configuration
-service:
-  type: ClusterIP    # Service type (ClusterIP/NodePort/LoadBalancer)
-  port: 80          # External port
-  targetPort: 8080  # Container port
-
-# External access configuration
-ingress:
-  enabled: true                # Enable/disable ingress
-  className: "nginx"          # Ingress class (nginx for local development)
-  annotations: {}              # No rewrite - keep original paths
-  hosts:
-    - host: health-service.local
-      paths:
-        - path: /health         # Direct health check path (matches Go app)
-          pathType: Prefix
-  tls: []                     # TLS/SSL configuration (empty for local)
+# Environment settings
+environment: development
 
 # Resource limits and requests
 resources:
-  limits:
-    cpu: 500m      # Maximum CPU (500 millicores)
-    memory: 128Mi  # Maximum memory
   requests:
-    cpu: 100m      # Guaranteed CPU
-    memory: 64Mi   # Guaranteed memory
-
-# Horizontal Pod Autoscaler
-autoscaling:
-  enabled: false                        # Enable/disable auto-scaling
-  minReplicas: 1                        # Minimum pod count
-  maxReplicas: 10                       # Maximum pod count
-  targetCPUUtilizationPercentage: 80    # Scale when CPU > 80%
-
-# Node selection constraints
-nodeSelector: {}   # Select specific nodes
-
-# Pod scheduling tolerations
-tolerations: []    # Allow scheduling on tainted nodes
-
-# Pod affinity/anti-affinity rules
-affinity: {}       # Advanced scheduling rules
-
-# Application health monitoring
-healthCheck:
-  enabled: true
-  livenessProbe:              # Restart pod if failing
-    httpGet:
-      path: /health
-      port: http
-    initialDelaySeconds: 30   # Wait before first check
-    periodSeconds: 10         # Check interval
-  readinessProbe:             # Remove from service if failing
-    httpGet:
-      path: /health
-      port: http
-    initialDelaySeconds: 5    # Wait before first check
-    periodSeconds: 5          # Check interval
+    memory: 64Mi
+    cpu: 100m
+  limits:
+    memory: 128Mi
+    cpu: 500m
