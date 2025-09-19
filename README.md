@@ -97,8 +97,8 @@ kubectl delete namespace health-service-dev health-service-staging health-servic
 
 ### Helm Chart Validation
 ```bash
-# Validate Helm chart before deployment
-helm lint devops/helm/
+# Validate Helm chart (requires environment values)
+helm lint devops/helm/ --values devops/helm/environments/values.dev.yaml
 
 # Preview templates for specific environment
 helm template health-service-dev devops/helm/ --values devops/helm/environments/values.dev.yaml
