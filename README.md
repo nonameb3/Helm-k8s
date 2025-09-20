@@ -46,7 +46,25 @@ kubectl get ingress -n health-service-prod
 kubectl get hpa -n health-service-prod
 ```
 
-## Setup External Access (NGINX Ingress)
+## Setup Required Infrastructure
+
+### Install Metrics Server (Required for HPA)
+```bash
+# Install metrics-server for resource monitoring
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+# Patch for Docker Desktop compatibility
+kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+
+# Wait for metrics-server to be ready
+kubectl wait --namespace kube-system --for=condition=ready pod --selector=k8s-app=metrics-server --timeout=60s
+
+# Verify metrics are working
+kubectl top nodes
+kubectl top pods --all-namespaces
+```
+
+### Setup External Access (NGINX Ingress)
 ```bash
 # Install NGINX Ingress Controller (one-time setup)
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
@@ -94,6 +112,24 @@ helm uninstall health-service-prod --namespace health-service-prod
 
 # Remove all environments at once
 kubectl delete namespace health-service-dev health-service-staging health-service-prod
+```
+
+### Complete Cluster Cleanup
+```bash
+# Remove all health-service deployments
+kubectl delete namespace health-service-dev health-service-staging health-service-prod
+
+# Remove NGINX Ingress Controller
+kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+
+# Remove metrics-server (if you want to clean everything)
+kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+# Clean up local DNS entries (optional)
+sudo sed -i '' '/health-service.*\.local/d' /etc/hosts
+
+# Verify cleanup
+kubectl get all --all-namespaces | grep -E "(health-service|ingress-nginx|metrics-server)"
 ```
 
 ## Troubleshooting & Validation
