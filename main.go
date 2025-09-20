@@ -3,12 +3,13 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"math"
 	"net/http"
+	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
-	"runtime"
-	"math"
 )
 
 type HealthResponse struct {
@@ -83,13 +84,35 @@ func loadHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
+func downHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("💥 CRASH REQUEST RECEIVED - Service will exit in 2 seconds!")
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	response := map[string]string{
+		"status":  "crashing",
+		"message": "Service will exit in 2 seconds - simulating failure",
+	}
+	json.NewEncoder(w).Encode(response)
+
+	// Allow response to be sent before crashing
+	go func() {
+		time.Sleep(2 * time.Second)
+		log.Println("💀 SERVICE CRASHED - Exiting with code 1")
+		os.Exit(1) // Simulate service crash
+	}()
+}
+
 func main() {
 	http.HandleFunc("/health", healthHandler)
 	http.HandleFunc("/load/", loadHandler)
+	http.HandleFunc("/down", downHandler)
 
 	log.Println("Server starting on :8080")
 	log.Println("Endpoints available:")
 	log.Println("  GET /health - Health check")
 	log.Println("  GET /load/:duration - CPU load test (duration in milliseconds, max 60000)")
+	log.Println("  GET /down - 💥 CRASH the service (exit code 1)")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

@@ -1,7 +1,7 @@
   # Production Environment Configuration
   service_name: health-service-prod
   image_name: health-service
-  image_tag: v2.0
+  image_tag: v2.1
   namespace: health-service-prod
 
   # Network configuration

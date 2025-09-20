@@ -42,6 +42,39 @@ curl http://health-service-staging.local/health
 curl http://health-service-prod.local/health
 ```
 
+## Build and Prepare Application
+
+### Build Docker Image
+```bash
+# Build the Go application image
+docker build -f devops/docker/Dockerfile -t health-service:v1.0 .
+
+# Verify image was created
+docker images | grep health-service
+
+# Test the image locally (optional)
+docker run -p 8080:8080 health-service:v2.1
+# Test: curl http://localhost:8080/health
+# Stop: Ctrl+C
+```
+
+### Update Image Tags
+Make sure the image tag in your values files matches the built image:
+
+```yaml
+# In devops/helm/environments/values.dev.yaml
+image_name: health-service
+image_tag: v1.0  # ← Tag
+
+# In devops/helm/environments/values.nonprod.yaml
+image_tag: v1.0  # ← Tag
+
+# In devops/helm/environments/values.prod.yaml
+image_tag: v1.0  # ← Tag
+```
+
+**Note:** Since we use `imagePullPolicy: Never` for local development, Kubernetes will use the local Docker image you just built.
+
 ## Multi-Environment Deployment
 
 ### Development Environment

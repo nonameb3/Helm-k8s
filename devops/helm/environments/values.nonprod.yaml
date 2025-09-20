@@ -1,7 +1,7 @@
   # Staging Environment Configuration
   service_name: health-service-staging
   image_name: health-service
-  image_tag: v2.0
+  image_tag: v2.1
   imagePullPolicy: Never
   namespace: health-service-staging
 

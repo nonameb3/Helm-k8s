@@ -1,7 +1,7 @@
   # Development Environment Configuration
   service_name: health-service-dev
   image_name: health-service
-  image_tag: v2.0
+  image_tag: v2.1
   imagePullPolicy: Never
   namespace: health-service-dev
 
