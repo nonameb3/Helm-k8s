@@ -5,6 +5,43 @@ kubectl cluster-info
 kubectl get nodes
 ```
 
+## Setup Required Infrastructure
+
+### Install Metrics Server (Required for HPA)
+```bash
+# Install metrics-server for resource monitoring
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+# Patch for Docker Desktop compatibility
+kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
+
+# Wait for metrics-server to be ready
+kubectl wait --namespace kube-system --for=condition=ready pod --selector=k8s-app=metrics-server --timeout=60s
+
+# Verify metrics are working
+kubectl top nodes
+kubectl top pods --all-namespaces
+```
+
+### Setup External Access (NGINX Ingress)
+```bash
+# Install NGINX Ingress Controller (one-time setup)
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+
+# Wait for ingress controller to be ready
+kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
+
+# Add local DNS entries for all environments
+echo "127.0.0.1 health-service-dev.local" | sudo tee -a /etc/hosts
+echo "127.0.0.1 health-service-staging.local" | sudo tee -a /etc/hosts
+echo "127.0.0.1 health-service-prod.local" | sudo tee -a /etc/hosts
+
+# Test all environments
+curl http://health-service-dev.local/health
+curl http://health-service-staging.local/health
+curl http://health-service-prod.local/health
+```
+
 ## Multi-Environment Deployment
 
 ### Development Environment
@@ -46,42 +83,6 @@ kubectl get ingress -n health-service-prod
 kubectl get hpa -n health-service-prod
 ```
 
-## Setup Required Infrastructure
-
-### Install Metrics Server (Required for HPA)
-```bash
-# Install metrics-server for resource monitoring
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-
-# Patch for Docker Desktop compatibility
-kubectl patch deployment metrics-server -n kube-system --type='json' -p='[{"op": "add", "path": "/spec/template/spec/containers/0/args/-", "value": "--kubelet-insecure-tls"}]'
-
-# Wait for metrics-server to be ready
-kubectl wait --namespace kube-system --for=condition=ready pod --selector=k8s-app=metrics-server --timeout=60s
-
-# Verify metrics are working
-kubectl top nodes
-kubectl top pods --all-namespaces
-```
-
-### Setup External Access (NGINX Ingress)
-```bash
-# Install NGINX Ingress Controller (one-time setup)
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
-
-# Wait for ingress controller to be ready
-kubectl wait --namespace ingress-nginx --for=condition=ready pod --selector=app.kubernetes.io/component=controller --timeout=90s
-
-# Add local DNS entries for all environments
-echo "127.0.0.1 health-service-dev.local" | sudo tee -a /etc/hosts
-echo "127.0.0.1 health-service-staging.local" | sudo tee -a /etc/hosts
-echo "127.0.0.1 health-service-prod.local" | sudo tee -a /etc/hosts
-
-# Test all environments
-curl http://health-service-dev.local/health
-curl http://health-service-staging.local/health
-curl http://health-service-prod.local/health
-```
 
 ## Useful Commands
 
