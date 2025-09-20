@@ -19,6 +19,7 @@ helm upgrade --install health-service-dev devops/helm/ --namespace health-servic
 kubectl get pods -n health-service-dev
 kubectl get services -n health-service-dev
 kubectl get ingress -n health-service-dev
+kubectl get hpa -n health-service-dev
 ```
 
 ### Staging Environment
@@ -30,6 +31,7 @@ helm upgrade --install health-service-staging devops/helm/ --namespace health-se
 kubectl get pods -n health-service-staging
 kubectl get services -n health-service-staging
 kubectl get ingress -n health-service-staging
+kubectl get hpa -n health-service-staging
 ```
 
 ### Production Environment
@@ -41,6 +43,7 @@ helm upgrade --install health-service-prod devops/helm/ --namespace health-servi
 kubectl get pods -n health-service-prod
 kubectl get services -n health-service-prod
 kubectl get ingress -n health-service-prod
+kubectl get hpa -n health-service-prod
 ```
 
 ## Setup External Access (NGINX Ingress)
@@ -137,7 +140,82 @@ kubectl run test-pod --rm -i --tty --image=busybox -- /bin/sh
 kubectl get pods,services,ingress --all-namespaces | grep health-service
 ```
 
+## Horizontal Pod Autoscaler (HPA)
+
+### HPA Configuration by Environment
+| Environment | Min Replicas | Max Replicas | CPU Target | Memory Target | Scale Up Policy | Scale Down Policy |
+|-------------|--------------|--------------|------------|---------------|----------------|------------------|
+| Development | 1 | 3 | 70% | 80% | Conservative (50%/1 pod per 60s) | Slow (10% per 60s) |
+| Staging | 2 | 5 | 60% | 70% | Moderate (100%/2 pods per 30s) | Medium (20% per 60s) |
+| Production | 3 | 10 | 50% | 60% | Aggressive (100%/3 pods per 15s) | Careful (25% per 60s) |
+
+### HPA Monitoring Commands
+```bash
+# Check HPA status across all environments
+kubectl get hpa --all-namespaces | grep health-service
+
+# Watch HPA scaling in real-time
+kubectl get hpa -n health-service-dev -w
+
+# Detailed HPA information
+kubectl describe hpa -n health-service-dev health-service-dev-hpa
+
+# Check current resource usage
+kubectl top pods --all-namespaces | grep health-service
+```
+
+### Load Testing HPA
+
+#### Method 1: Built-in Load Endpoint (Recommended)
+```bash
+# Generate sustained CPU load to trigger scaling
+curl http://health-service-dev.local/load/30000 &  # 30-second CPU load
+curl http://health-service-dev.local/load/30000 &  # 30-second CPU load
+curl http://health-service-dev.local/load/30000 &  # 30-second CPU load
+
+# Test multiple concurrent requests to see load distribution
+for i in {1..6}; do
+  curl http://health-service-dev.local/load/20000 &
+done
+
+# Watch scaling in real-time
+kubectl get pods -n health-service-dev -w
+kubectl get hpa -n health-service-dev -w
+
+# Monitor which pods handle requests
+kubectl logs -n health-service-dev -l service=health-service-dev --tail=20 -f
+```
+
+#### Method 2: External Load Testing
+```bash
+# Install Apache Bench for load testing
+# macOS: brew install httpd
+# Ubuntu: sudo apt install apache2-utils
+
+# Generate load to trigger scaling
+ab -n 10000 -c 50 http://health-service-dev.local/health
+
+# Monitor HPA decisions
+kubectl get events -n health-service-dev --sort-by='.lastTimestamp' | grep HorizontalPodAutoscaler
+```
+
+### Troubleshooting HPA
+```bash
+# Check if metrics-server is running
+kubectl get pods -n kube-system | grep metrics-server
+kubectl top nodes
+
+# Verify pod resource requests (required for HPA)
+kubectl describe pod -n health-service-dev -l service=health-service-dev
+
+# Check HPA events and scaling decisions
+kubectl describe hpa -n health-service-dev
+
+# View HPA controller logs
+kubectl logs -n kube-system -l k8s-app=metrics-server
+```
+
 ## Environment Configuration Overview
-- **Development**: 1 replica, minimal resources, local images
-- **Staging**: 2 replicas, production-like resources
-- **Production**: 3 replicas, maximum resources and CPU limits
+- **Development**: 1-3 replicas, minimal resources, conservative HPA
+- **Staging**: 2-5 replicas, production-like resources, moderate HPA
+- **Production**: 3-10 replicas, maximum resources, aggressive HPA

@@ -1,13 +1,12 @@
   # Production Environment Configuration
   service_name: health-service-prod
   image_name: health-service
-  image_tag: v1.5
+  image_tag: v2.0
   namespace: health-service-prod
-  replicas: 3
 
   # Network configuration
   port: 8080
-  ingress_path: /health
+  ingress_path: /
   ingress_host: health-service-prod.local
 
   # Environment settings
@@ -21,3 +20,19 @@
     limits:
       memory: 256Mi
       cpu: 1000m
+
+  # HPA configuration for production (aggressive scaling)
+  hpa:
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      percentPolicy: 100
+      podsPolicy: 3
+      periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      percentPolicy: 25
+      periodSeconds: 60

@@ -1,14 +1,13 @@
   # Staging Environment Configuration
   service_name: health-service-staging
   image_name: health-service
-  image_tag: v1.5
+  image_tag: v2.0
   imagePullPolicy: Never
   namespace: health-service-staging
-  replicas: 2
 
   # Network configuration
   port: 8080
-  ingress_path: /health
+  ingress_path: /
   ingress_host: health-service-staging.local
 
   # Environment settings
@@ -22,3 +21,19 @@
     limits:
       memory: 128Mi
       cpu: 500m
+
+  # HPA configuration for staging (moderate scaling)
+  hpa:
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
+    targetMemoryUtilizationPercentage: 70
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      percentPolicy: 100
+      podsPolicy: 2
+      periodSeconds: 30
+    scaleDown:
+      stabilizationWindowSeconds: 180
+      percentPolicy: 20
+      periodSeconds: 60

@@ -4,7 +4,6 @@ metadata:
   name: {{ .Values.service_name }}
   namespace: {{ .Values.namespace }}
 spec:
-  replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
       service: {{ .Values.service_name }}

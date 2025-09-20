@@ -1,14 +1,13 @@
   # Development Environment Configuration
   service_name: health-service-dev
   image_name: health-service
-  image_tag: v1.5
+  image_tag: v2.0
   imagePullPolicy: Never
   namespace: health-service-dev
-  replicas: 1
 
   # Network configuration
   port: 8080
-  ingress_path: /health
+  ingress_path: / # All api path
   ingress_host: health-service-dev.local
 
   # Environment settings
@@ -22,3 +21,19 @@
     limits:
       memory: 64Mi
       cpu: 200m
+
+  # HPA configuration for development (faster scaling for testing)
+  hpa:
+    minReplicas: 1                        # Minimum number of pods (never scale below this)
+    maxReplicas: 3                        # Maximum number of pods (never scale above this)
+    targetCPUUtilizationPercentage: 70    # Scale up when CPU > 70% of request (50m)
+    targetMemoryUtilizationPercentage: 80 # Scale up when memory > 80% of request (32Mi)
+    scaleUp:
+      stabilizationWindowSeconds: 60      # Wait 60s before making another scale-up decision
+      percentPolicy: 50                   # Max 50% increase per scaling event (1→2 pods = 100%, so 50% = slower)
+      podsPolicy: 1                       # Max 1 pod added per scaling event
+      periodSeconds: 60                   # Check scaling conditions every 60 seconds
+    scaleDown:
+      stabilizationWindowSeconds: 180     # Wait 180s before making another scale-down decision (slower)
+      percentPolicy: 10                   # Max 10% decrease per scaling event (very conservative)
+      periodSeconds: 60                   # Check scaling conditions every 60 seconds

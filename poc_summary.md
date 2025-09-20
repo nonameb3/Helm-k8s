@@ -77,6 +77,11 @@ helm upgrade --install health-service-prod devops/helm/ --namespace health-servi
 - Staging: http://health-service-staging.local/health
 - Production: http://health-service-prod.local/health
 
+### Load Testing URLs
+- Development: http://health-service-dev.local/load/:duration
+- Staging: http://health-service-staging.local/load/:duration
+- Production: http://health-service-prod.local/load/:duration
+
 ## Key Features Implemented ✅
 
 ### 1. Multi-Environment Deployment
@@ -104,7 +109,15 @@ helm upgrade --install health-service-prod devops/helm/ --namespace health-servi
 - [x] /etc/hosts DNS resolution
 - [x] Namespace isolation testing
 
-### 5. Operational Excellence
+### 5. Horizontal Pod Autoscaler (HPA)
+- [x] Environment-specific scaling policies and thresholds
+- [x] CPU and memory-based autoscaling triggers
+- [x] Advanced scaling behavior with stabilization windows
+- [x] Built-in load testing endpoint (/load/:duration)
+- [x] Real-time metrics monitoring with metrics-server
+- [x] Load distribution testing across multiple pods
+
+### 6. Operational Excellence
 - [x] Explicit environment selection (no default values.yaml)
 - [x] Comprehensive README with all commands
 - [x] Troubleshooting guides per environment
@@ -149,12 +162,15 @@ This PoC successfully demonstrates enterprise-grade Kubernetes + Helm deployment
 - ✅ Local development environment
 - ✅ External access via ingress
 - ✅ Proper resource management
+- ✅ Horizontal Pod Autoscaler (HPA) with environment-specific scaling policies
+- ✅ Built-in load testing endpoint for HPA validation
+- ✅ Real-time metrics monitoring with metrics-server
 - ✅ Comprehensive documentation
 
 ## Next Steps (Optional Extensions)
 
 ### Advanced Features
-- [ ] Horizontal Pod Autoscaler (HPA)
+- [x] ~~Horizontal Pod Autoscaler (HPA)~~ ✅ **COMPLETED**
 - [ ] Pod Disruption Budgets (PDB)
 - [ ] ConfigMaps and Secrets management
 - [ ] Network policies for inter-namespace security
